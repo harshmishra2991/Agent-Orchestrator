@@ -23,8 +23,8 @@ def parser(context):
     new_context = context.copy()
     new_context["destination"] = "paris"
     new_context["travel_mode"] ="flight"
-    new_context["travel date"] = "friday"
-    
+    new_context["travel_date"] = "friday"
+
     result["status"] = "success"
     result["context"] = new_context
 
