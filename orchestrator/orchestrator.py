@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed, TimeoutError
 class Orchestrator:
     def __init__(self,steps):
         self.steps = steps
@@ -33,4 +34,33 @@ class Orchestrator:
             "context" : context,
             "trace" : self.execution_trace
         }        
+    
+    def run_parallel(self, agents, context, timeout = 3):
+        results = []
+
+        with ThreadPoolExecutor() as executor:
+            futures = {}
+            for agent in agents:
+                future = executor.submit(agent, context)
+                futures[future] = agent.__name__
+                
+            try:
+                for future in as_completed(futures, timeout= timeout):
+                    result = future.result()
+                    results.append(result)
+            except TimeoutError:
+                print("global timeout reached")
+
+            for future, agent_name in futures.items():
+                if not future.done():
+                    results.append({
+                        "status": "failure",
+                        "provider": agent_name,
+                        "price":None,
+                        "reason": "timeout"
+                    })
+
+        return results
+        
+                    
 
